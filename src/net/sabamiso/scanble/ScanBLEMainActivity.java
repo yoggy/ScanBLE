@@ -120,6 +120,10 @@ public class ScanBLEMainActivity extends Activity implements
 		if (flag == true) {
 			handler.postDelayed(handle_start_ble_scan, SCAN_INTERVAL);
 		}
+		else {
+			handler.removeCallbacks(handle_start_ble_scan);
+			handler.removeCallbacks(handle_stop_ble_scan);
+		}
 	}
 
 	@Override
