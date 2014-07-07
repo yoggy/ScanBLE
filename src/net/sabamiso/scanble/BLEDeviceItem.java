@@ -1,14 +1,14 @@
 package net.sabamiso.scanble;
 
-public class Item {
+public class BLEDeviceItem {
 	private String name = "";
 	private String address = "";
 	private String rssi = "";
 
-	public Item() {
+	public BLEDeviceItem() {
 	}
 
-	public Item(String name, String address, String rssi) {
+	public BLEDeviceItem(String name, String address, String rssi) {
 		this.name = name;
 		this.address = address;
 		this.rssi = rssi;

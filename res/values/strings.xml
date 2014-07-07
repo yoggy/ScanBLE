@@ -2,11 +2,18 @@
 <resources>
 
     <string name="app_name">ScanBLE</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="ble_not_supported">This hardware does not support Bluetooth LE.</string>
     <string name="bluetooth_not_supported">This hardware does not support Bluetooth.</string>
     <string name="enable_bluetooth_message">Bluetooth enabled</string>
     <string name="bluetooth_not_enabled">Please enable bluetooth adaptor, if using this application, </string>
+
+    <string name="error_bluetooth_adaptor_get_remote_device">BluetoothAdaptor.getRemoteDevice() failed...</string>
+    <string name="error_bluetooth_device_connect_gatt">BluetoothDevice.connectGatt() failed...</string>
+    <string name="error_bluetooth_gatt_connect">BluetoothGatt.connect() failed...</string>
     
+    
+    <string name="title_activity_bledevice">ScanBLE (Device Detail)</string>
+    <string name="title_activity_scanble">ScanBLE (Device List)</string>
+
 </resources>

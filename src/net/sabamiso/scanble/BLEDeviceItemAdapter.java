@@ -9,10 +9,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class ItemAdapter extends ArrayAdapter<Item> {
+public class BLEDeviceItemAdapter extends ArrayAdapter<BLEDeviceItem> {
 	private LayoutInflater inflater;
 
-	public ItemAdapter(Context context, List<Item> list) {
+	public BLEDeviceItemAdapter(Context context, List<BLEDeviceItem> list) {
 		super(context, 0, list);
 		inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -24,7 +24,7 @@ public class ItemAdapter extends ArrayAdapter<Item> {
 			convertView = inflater.inflate(R.layout.listitem, null);
 		}
 
-		Item item = (Item) getItem(p);
+		final BLEDeviceItem item = (BLEDeviceItem) getItem(p);
 
 		TextView tv;
 		tv = (TextView) convertView.findViewById(R.id.name);

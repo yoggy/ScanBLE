@@ -11,31 +11,40 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
 public class ScanBLEMainActivity extends Activity implements
-		BluetoothAdapter.LeScanCallback {
+		BluetoothAdapter.LeScanCallback, OnItemClickListener {
 
 	protected BluetoothManager bluetooth_manager;
 	protected BluetoothAdapter bluetooth_adapter;
 	protected Handler handler = new Handler();
 	protected boolean is_scannning = false;
-	
-	ArrayList<Item> device_list = new ArrayList<Item>();
-	
+
+	ArrayList<BLEDeviceItem> device_list = new ArrayList<BLEDeviceItem>();
+	ArrayList<BLEDeviceItem> device_list_copy = new ArrayList<BLEDeviceItem>(); // for list_view
+	BLEDeviceItemAdapter list_view_adaptor;
+
 	private static final int REQUEST_ENABLE_BT = 1;
-	private static final int SCAN_DULATION = 2000;
-	private static final int SCAN_INTERVAL = 500;
-	
+	private static final int SCAN_DULATION = 1000;
+	private static final int SCAN_INTERVAL = 200;
+
 	ListView list_view;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_scan_ble_main);
 
+		// setup listview
 		list_view = (ListView) findViewById(R.id.listView1);
+		list_view_adaptor = new BLEDeviceItemAdapter(this, device_list_copy);
+		list_view.setAdapter(list_view_adaptor);
+		list_view.setOnItemClickListener(this);
 		
 		if (checkBluetoothAdaptor() == false) {
 			return;
@@ -51,7 +60,7 @@ public class ScanBLEMainActivity extends Activity implements
 			public void run() {
 				checkBluetoothEnable();
 			}
-		}, 1000);
+		}, 500);
 	}
 
 	@Override
@@ -102,25 +111,32 @@ public class ScanBLEMainActivity extends Activity implements
 
 	private void startBLEScan() {
 		if (is_scannning == false) {
-			bluetooth_adapter.startLeScan(this);
 			device_list.clear();
+			bluetooth_adapter.startLeScan(this);
 		}
 		is_scannning = true;
-		
+
 		handler.postDelayed(handle_stop_ble_scan, SCAN_DULATION);
 	}
 
 	private void stopBLEScan(boolean flag) {
 		if (is_scannning == true) {
 			bluetooth_adapter.stopLeScan(this);
-			updateDeviceList();
 		}
+
+		// copy to list_view
+		device_list_copy.clear();
+		for (BLEDeviceItem item : device_list) {
+			device_list_copy.add(item);
+		}
+		list_view_adaptor.notifyDataSetChanged();
+		device_list.clear();
+
 		is_scannning = false;
 
 		if (flag == true) {
 			handler.postDelayed(handle_start_ble_scan, SCAN_INTERVAL);
-		}
-		else {
+		} else {
 			handler.removeCallbacks(handle_start_ble_scan);
 			handler.removeCallbacks(handle_stop_ble_scan);
 		}
@@ -128,18 +144,28 @@ public class ScanBLEMainActivity extends Activity implements
 
 	@Override
 	public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-		Item item = new Item();
+		BLEDeviceItem item = new BLEDeviceItem();
 		item.setName(device.getName());
 		item.setAddress(device.getAddress());
 		item.setRssi(Integer.toString(rssi));
-
-		Log.d("ScanBLE", item.toString());
+		
 		device_list.add(item);
 	}
 
-	private void updateDeviceList() {
-		ItemAdapter adapter = new ItemAdapter(this, device_list);
-		list_view.setAdapter(adapter);
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+        BLEDeviceItem item = (BLEDeviceItem) list_view.getItemAtPosition(position);
+		Log.d("ScanBLE", item.toString());
+
+        stopBLEScan(false);
+
+		// start BLEDeviceActivity
+		final Intent intent = new Intent(this, BLEDeviceActivity.class);
+        intent.putExtra("name", item.getName());
+        intent.putExtra("address", item.getAddress());
+        intent.setAction(Intent.ACTION_VIEW);
+        startActivity(intent);
 	}
 
 	private void exit_message(int message_id) {
@@ -151,15 +177,13 @@ public class ScanBLEMainActivity extends Activity implements
 		@Override
 		public void run() {
 			startBLEScan();
-			Log.d("ScanBLE", "startBLEScan() called");
 		}
 	};
-	
+
 	protected Runnable handle_stop_ble_scan = new Runnable() {
 		@Override
 		public void run() {
 			stopBLEScan(true);
-			Log.d("ScanBLE", "stopBLEScan() called");
 		}
 	};
 }
