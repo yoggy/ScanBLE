@@ -147,7 +147,7 @@ public class BLEDeviceActivity extends Activity {
 				Log.d("ScanBLE", "  BluetoothGattCharacteristic uuid=" + c.getUuid() + ", propery=" + toCharacteristicPropertiesString(c.getProperties()));	
 				
 				for (BluetoothGattDescriptor d : c.getDescriptors()) {
-					Log.d("ScanBLE", "       BluetoothGattDescriptor uuid=" + d.getUuid() + ", permissions=" + toCharacteristicPropertiesString(c.getProperties()));	
+					Log.d("ScanBLE", "       BluetoothGattDescriptor uuid=" + d.getUuid() + ", permissions=" + toDescriptorPermissionString(d.getPermissions()));	
 				}
 				
 				// test for sensortag
@@ -190,6 +190,37 @@ public class BLEDeviceActivity extends Activity {
 		}
 		if ((prop & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) {
 			str += "PROPERTY_WRITE_NO_RESPONSE ";
+		}
+		
+		return str;
+	}
+	
+	private String toDescriptorPermissionString(int permission) {
+		String str = "";
+		
+		if ((permission & BluetoothGattDescriptor.PERMISSION_READ) != 0) {
+			str += "PERMISSION_READ ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED) != 0) {
+			str += "PERMISSION_READ_ENCRYPTED ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED_MITM) != 0) {
+			str += "PERMISSION_READ_ENCRYPTED_MITM ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_WRITE) != 0) {
+			str += "PERMISSION_WRITE ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED) != 0) {
+			str += "PERMISSION_WRITE_ENCRYPTED ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED_MITM) != 0) {
+			str += "PERMISSION_WRITE_ENCRYPTED_MITM ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED) != 0) {
+			str += "PERMISSION_WRITE_SIGNED ";
+		}
+		if ((permission & BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED_MITM) != 0) {
+			str += "PERMISSION_WRITE_SIGNED_MITM ";
 		}
 		
 		return str;
