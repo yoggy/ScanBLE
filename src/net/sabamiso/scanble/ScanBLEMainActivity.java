@@ -31,7 +31,7 @@ public class ScanBLEMainActivity extends Activity implements
 
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int SCAN_DULATION = 1000;
-	private static final int SCAN_INTERVAL = 200;
+	private static final int SCAN_INTERVAL = 500;
 
 	ListView list_view;
 
@@ -49,22 +49,26 @@ public class ScanBLEMainActivity extends Activity implements
 		if (checkBluetoothAdaptor() == false) {
 			return;
 		}
+		if (setupBluetooth() == false) {
+			return;
+		}		
 	}
 
 	@Override
 	public void onResume() {
+		Log.d("ScanBLE", "onResume()");
+
 		super.onResume();
 
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				checkBluetoothEnable();
-			}
-		}, 500);
+		if (checkBluetoothEnable() == true) {
+			startBLEScan();
+		}
 	}
 
 	@Override
 	public void onPause() {
+		Log.d("ScanBLE", "onPause()");
+
 		stopBLEScan(false);
 		super.onPause();
 	}
@@ -77,6 +81,10 @@ public class ScanBLEMainActivity extends Activity implements
 			return false;
 		}
 
+		return true;
+	}
+
+	protected boolean setupBluetooth() {
 		// check for the presence of bluetooth adaptor.
 		bluetooth_manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
 		bluetooth_adapter = bluetooth_manager.getAdapter();
@@ -84,32 +92,38 @@ public class ScanBLEMainActivity extends Activity implements
 			exit_message(R.string.bluetooth_not_supported);
 			return false;
 		}
-
+		
 		return true;
 	}
-
-	private void checkBluetoothEnable() {
+	
+	protected boolean checkBluetoothEnable() {
 		if (!bluetooth_adapter.isEnabled()) {
 			Intent enable_bt_intent = new Intent(
 					BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivityForResult(enable_bt_intent, REQUEST_ENABLE_BT);
-		} else {
-			startBLEScan();
+
+			return false;
 		}
+		return true;
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d("ScanBLE", "onActivityResult()");
+
 		if (requestCode == REQUEST_ENABLE_BT
 				&& resultCode == Activity.RESULT_CANCELED) {
 			exit_message(R.string.bluetooth_not_enabled);
 			return;
 		}
-		startBLEScan();
 		super.onActivityResult(requestCode, resultCode, data);
+		
+		// Order of function call : onCreate()->onResume()->call startActivityForResult()->onPause()->[intent]->onActivityResult()->onResume()->...
 	}
 
 	private void startBLEScan() {
+		Log.d("ScanBLE", "startBLEScan()");
+
 		if (is_scannning == false) {
 			device_list.clear();
 			bluetooth_adapter.startLeScan(this);
@@ -120,17 +134,13 @@ public class ScanBLEMainActivity extends Activity implements
 	}
 
 	private void stopBLEScan(boolean flag) {
+		Log.d("ScanBLE", "stopBLEScan()");
+
 		if (is_scannning == true) {
 			bluetooth_adapter.stopLeScan(this);
 		}
 
-		// copy to list_view
-		device_list_copy.clear();
-		for (BLEDeviceItem item : device_list) {
-			device_list_copy.add(item);
-		}
-		list_view_adaptor.notifyDataSetChanged();
-		device_list.clear();
+		updateListView();
 
 		is_scannning = false;
 
@@ -149,7 +159,20 @@ public class ScanBLEMainActivity extends Activity implements
 		item.setAddress(device.getAddress());
 		item.setRssi(Integer.toString(rssi));
 		
+		Log.d("ScanBLE", "onLEScan() : item=" + item.toString());
 		device_list.add(item);
+	}
+	
+	protected void updateListView() {
+		Log.d("ScanBLE", "updateListView() : device_list.size()=" + device_list.size());
+
+		device_list_copy.clear();
+		for (BLEDeviceItem item : device_list) {
+			device_list_copy.add(item);
+		}
+		list_view_adaptor.notifyDataSetChanged();
+		list_view.invalidate();
+		device_list.clear();
 	}
 
 	@Override
