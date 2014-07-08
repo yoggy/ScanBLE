@@ -1,6 +1,7 @@
 package net.sabamiso.scanble;
 
 import java.util.List;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -8,6 +9,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -26,6 +28,9 @@ public class BLEDeviceActivity extends Activity {
 	
 	String device_name;
 	String device_address;
+	
+	static final String KEY_CHAR_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+	static final String KEY_DESC_UUID = "00002902-0000-1000-8000-00805f9b34fb";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -112,8 +117,22 @@ public class BLEDeviceActivity extends Activity {
 			}
 		}
 		
+		// callback triggered as a result of a remote characteristic notification.
+		@Override
+		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic c) {
+			Byte val = c.getValue()[0];
+			Log.d("ScanBLE", "onCharacteristicChanged() val[0]=" + val);
+		}
+
+		// callback reporting the result of a characteristic read operation.
 		@Override
 		public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic c, int status) {
+			Log.d("ScanBLE", "onCharacteristicRead()");
+			
+			if (status != BluetoothGatt.GATT_SUCCESS) {
+				// read failed...
+				return;
+			}
 		}
 	};
 		
@@ -126,6 +145,21 @@ public class BLEDeviceActivity extends Activity {
 			List<BluetoothGattCharacteristic> cs = service.getCharacteristics();
 			for (BluetoothGattCharacteristic c : cs) {
 				Log.d("ScanBLE", "  BluetoothGattCharacteristic uuid=" + c.getUuid() + ", propery=" + toCharacteristicPropertiesString(c.getProperties()));	
+				
+				for (BluetoothGattDescriptor d : c.getDescriptors()) {
+					Log.d("ScanBLE", "       BluetoothGattDescriptor uuid=" + d.getUuid() + ", permissions=" + toCharacteristicPropertiesString(c.getProperties()));	
+				}
+				
+				// test for sensortag
+				if (KEY_CHAR_UUID.equals(c.getUuid().toString()) == true) {
+					// enable local
+					bluetooth_gatt.setCharacteristicNotification(c, true);
+
+					// enable remote
+					BluetoothGattDescriptor desc = c.getDescriptor(UUID.fromString(KEY_DESC_UUID));
+					desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+					bluetooth_gatt.writeDescriptor(desc);
+				}
 			}
 		}
 	}
