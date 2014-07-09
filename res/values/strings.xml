@@ -8,6 +8,8 @@
     <string name="enable_bluetooth_message">Bluetooth enabled</string>
     <string name="bluetooth_not_enabled">Please enable bluetooth adaptor, if using this application, </string>
 
+    <string name="empty_device_list">No devices found...</string>
+    
     <string name="error_bluetooth_adaptor_get_remote_device">BluetoothAdaptor.getRemoteDevice() failed...</string>
     <string name="error_bluetooth_device_connect_gatt">BluetoothDevice.connectGatt() failed...</string>
     <string name="error_bluetooth_gatt_connect">BluetoothGatt.connect() failed...</string>

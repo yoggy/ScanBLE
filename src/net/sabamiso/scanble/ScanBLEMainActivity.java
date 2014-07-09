@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ScanBLEMainActivity extends Activity implements
@@ -34,6 +35,7 @@ public class ScanBLEMainActivity extends Activity implements
 	private static final int SCAN_INTERVAL = 500;
 
 	ListView list_view;
+	TextView empty_view;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,8 @@ public class ScanBLEMainActivity extends Activity implements
 		list_view_adaptor = new BLEDeviceItemAdapter(this, device_list_copy);
 		list_view.setAdapter(list_view_adaptor);
 		list_view.setOnItemClickListener(this);
+		
+		empty_view = (TextView) findViewById(R.id.empty_view);
 		
 		if (checkBluetoothAdaptor() == false) {
 			return;
@@ -173,6 +177,13 @@ public class ScanBLEMainActivity extends Activity implements
 		list_view_adaptor.notifyDataSetChanged();
 		list_view.invalidate();
 		device_list.clear();
+		
+		if (device_list_copy.size() > 0) {
+			empty_view.setVisibility(View.INVISIBLE);
+		}
+		else {
+			empty_view.setVisibility(View.VISIBLE);
+		}
 	}
 
 	@Override
